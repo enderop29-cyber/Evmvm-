@@ -1,0 +1,6 @@
+{
+  "name": "EVM Panel",
+  "description": "A modern Docker-based VPS Management Panel with live container metrics, interactive Web Terminal console, NAT port manager, RBAC authentication, and coupon redeem code system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
