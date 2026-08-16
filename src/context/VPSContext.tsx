@@ -62,7 +62,7 @@ export const VPSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [instances, setInstances] = useState<VPSInstance[]>(() => {
     try {
-      const saved = localStorage.getItem('evm_instances');
+      const saved = localStorage.getItem('evm_instances_v2');
       return saved ? JSON.parse(saved) : INITIAL_INSTANCES;
     } catch {
       return INITIAL_INSTANCES;
@@ -71,25 +71,47 @@ export const VPSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [redeemCodes, setRedeemCodes] = useState<RedeemCode[]>(() => {
     try {
-      const saved = localStorage.getItem('evm_redeem_codes');
+      const saved = localStorage.getItem('evm_redeem_codes_v2');
       return saved ? JSON.parse(saved) : INITIAL_REDEEM_CODES;
     } catch {
       return INITIAL_REDEEM_CODES;
     }
   });
 
-  const [nodes] = useState<HostNode[]>(INITIAL_NODES);
-  const [selectedVpsId, setSelectedVpsId] = useState<string | null>(() => {
-    return INITIAL_INSTANCES[0]?.id || null;
-  });
+  const [rawNodes] = useState<HostNode[]>(INITIAL_NODES);
+  const [selectedVpsId, setSelectedVpsId] = useState<string | null>(null);
+
+  // Computed nodes with live active container counts based on deployed instances
+  const nodes = React.useMemo(() => {
+    return rawNodes.map((node) => {
+      const localAssigned = instances.filter((inst) => inst.nodeName === node.name).length;
+      if (node.isLocal) {
+        const runningLocal = instances.filter((inst) => inst.nodeName === node.name && inst.status === 'RUNNING');
+        const usedRam = 4096 + runningLocal.reduce((acc, curr) => acc + curr.ramMb, 0);
+        const usedDisk = 20 + runningLocal.reduce((acc, curr) => acc + curr.diskGb, 0);
+        const calcCpu = Math.min(95, +(8.5 + runningLocal.length * 4.2).toFixed(1));
+        return {
+          ...node,
+          activeContainers: localAssigned,
+          ramUsageMb: Math.min(node.ramTotalMb, usedRam),
+          diskUsageGb: Math.min(node.diskTotalGb, usedDisk),
+          cpuUsage: calcCpu,
+        };
+      }
+      return {
+        ...node,
+        activeContainers: node.activeContainers + localAssigned,
+      };
+    });
+  }, [rawNodes, instances]);
 
   // Save to local storage
   useEffect(() => {
-    localStorage.setItem('evm_instances', JSON.stringify(instances));
+    localStorage.setItem('evm_instances_v2', JSON.stringify(instances));
   }, [instances]);
 
   useEffect(() => {
-    localStorage.setItem('evm_redeem_codes', JSON.stringify(redeemCodes));
+    localStorage.setItem('evm_redeem_codes_v2', JSON.stringify(redeemCodes));
   }, [redeemCodes]);
 
   // Real-time metric ticker simulation for active Docker containers
@@ -260,7 +282,7 @@ export const VPSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       currentDiskGb: +(data.diskGb * 0.08).toFixed(1),
       networkInTotalMb: 12.0,
       networkOutTotalMb: 8.5,
-      ipv4: node.ip,
+      ipv4: node.isLocal ? '127.0.0.1' : node.ip.split(' ')[0],
       sshPort: randomPort,
       ports: [
         {
@@ -342,7 +364,7 @@ export const VPSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       currentDiskGb: +(codeObj.diskGb * 0.05).toFixed(1),
       networkInTotalMb: 5.2,
       networkOutTotalMb: 2.4,
-      ipv4: node.ip,
+      ipv4: node.isLocal ? '127.0.0.1' : node.ip.split(' ')[0],
       sshPort: randomPort,
       ports: [
         {

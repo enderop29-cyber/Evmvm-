@@ -8,7 +8,8 @@ import {
   ShieldCheck,
   PlusCircle,
   Lock,
-  Cpu
+  Cpu,
+  Paintbrush
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useVPS } from '../context/VPSContext';
@@ -19,12 +20,14 @@ interface SidebarProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
   onOpenDeployModal: () => void;
+  onOpenThemeModal?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
   onOpenDeployModal,
+  onOpenThemeModal,
 }) => {
   const { isAdmin } = useAuth();
   const { userInstances, selectedVps } = useVPS();
@@ -163,8 +166,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Footer Info: Docker Engine */}
-      <div className="hidden md:block pt-6 border-t border-zinc-900">
+      {/* Footer Info: Docker Engine & Customization */}
+      <div className="hidden md:block pt-4 border-t border-zinc-900 space-y-3">
+        {onOpenThemeModal && (
+          <button
+            onClick={onOpenThemeModal}
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 text-xs font-medium transition-all"
+          >
+            <Paintbrush className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Customize Appearance</span>
+          </button>
+        )}
+
         <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-900 space-y-1.5 text-[11px]">
           <div className="flex items-center justify-between text-zinc-400">
             <span className="flex items-center gap-1 text-zinc-400">

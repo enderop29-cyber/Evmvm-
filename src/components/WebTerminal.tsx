@@ -1,8 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, Sparkles, Play, RotateCcw, Power, ChevronRight, Server, Copy, Check } from 'lucide-react';
+import {
+  Terminal as TerminalIcon,
+  Sparkles,
+  Play,
+  RotateCcw,
+  Power,
+  ChevronRight,
+  Server,
+  Copy,
+  Check,
+  Zap,
+  Radio,
+  ExternalLink,
+  Key
+} from 'lucide-react';
 import { useVPS } from '../context/VPSContext';
 
-export const WebTerminal: React.FC = () => {
+interface WebTerminalProps {
+  onOpenSSHSession?: () => void;
+}
+
+export const WebTerminal: React.FC<WebTerminalProps> = ({ onOpenSSHSession }) => {
   const { userInstances, selectedVps, selectedVpsId, setSelectedVpsId, startVPS } = useVPS();
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
@@ -16,7 +34,7 @@ export const WebTerminal: React.FC = () => {
   const [lines, setLines] = useState<Array<{ id: string; type: 'input' | 'output' | 'system'; text: string; color?: string }>>([
     { id: '1', type: 'system', text: '⚡ EVM Panel Web Console v2.8 (Docker TTY Direct Attach)', color: 'text-cyan-400' },
     { id: '2', type: 'system', text: 'Connected to container pseudo-terminal via WebSocket stream.', color: 'text-zinc-500' },
-    { id: '3', type: 'system', text: 'Type "help" to view available system commands or "neofetch" for container hardware specs.', color: 'text-emerald-400' },
+    { id: '3', type: 'system', text: 'Type "help" for commands, "sshx" to start collaborative web session, or "neofetch" for hardware specs.', color: 'text-emerald-400' },
   ]);
 
   useEffect(() => {
@@ -52,6 +70,10 @@ export const WebTerminal: React.FC = () => {
       case 'help':
         addLine('output', '──────────────── EVM Linux Container Shell ────────────────', 'text-cyan-400');
         addLine('output', 'Available commands:', 'text-zinc-300');
+        addLine('output', '  ssh            - Display direct SSH connection commands (Termux / CMD)', 'text-zinc-400');
+        addLine('output', '  sshx           - Start collaborative browser web terminal session', 'text-zinc-400');
+        addLine('output', '  tmate          - Generate instant tmate SSH reverse tunnel & web session', 'text-zinc-400');
+        addLine('output', '  termux         - Print 1-click Termux (Android) connection command', 'text-zinc-400');
         addLine('output', '  neofetch       - Display system hardware & OS banner', 'text-zinc-400');
         addLine('output', '  htop / top     - Real-time CPU & memory process monitor', 'text-zinc-400');
         addLine('output', '  docker ps      - Show container runtime status & NAT mappings', 'text-zinc-400');
@@ -62,6 +84,35 @@ export const WebTerminal: React.FC = () => {
         addLine('output', '  ip addr        - Show network interface & IPv4 addresses', 'text-zinc-400');
         addLine('output', '  uptime         - Show system load average & uptime', 'text-zinc-400');
         addLine('output', '  clear          - Clear terminal console viewport', 'text-zinc-400');
+        break;
+
+      case 'sshx':
+        addLine('output', '⚡ Generating instant sshx collaborative web session...', 'text-cyan-400 font-bold');
+        const sessId = `evm-${activeVps.id.slice(0, 6)}-${Math.random().toString(36).substring(2, 7)}`;
+        addLine('output', `  sshx daemon listening: https://sshx.io/s#${sessId}`, 'text-emerald-400 font-mono');
+        addLine('output', `  Multiplayer link ready! You can share this link to invite collaborators into this terminal.`, 'text-zinc-300');
+        addLine('output', `  Or install sshx agent: curl -sSf https://sshx.io/get | sh -s run`, 'text-zinc-500');
+        break;
+
+      case 'tmate':
+        addLine('output', '⚡ Generating instant tmate terminal session...', 'text-emerald-400 font-bold');
+        const tmateId = `evm-${activeVps.id.slice(0, 6)}`;
+        addLine('output', `  SSH Session: ssh ${tmateId}@nyc1.tmate.io`, 'text-cyan-300 font-mono font-bold');
+        addLine('output', `  Web Session: https://tmate.io/t/${tmateId}`, 'text-emerald-400 font-mono');
+        addLine('output', `  Read-Only Web: https://tmate.io/t/ro-${tmateId}`, 'text-zinc-400 font-mono');
+        break;
+
+      case 'termux':
+      case 'ssh':
+        const cleanHost = activeVps.ipv4.includes('127.0.0.1') ? '127.0.0.1' : activeVps.ipv4;
+        addLine('output', '──────────────── SSH Connection Parameters ────────────────', 'text-indigo-400');
+        addLine('output', `  Host IPv4: ${cleanHost}`, 'text-zinc-300');
+        addLine('output', `  Port: ${activeVps.sshPort} (Docker NAT Mapped)`, 'text-zinc-300');
+        addLine('output', `  User: root`, 'text-zinc-300');
+        addLine('output', `  Termux / Linux / CMD Command:`, 'text-zinc-400');
+        addLine('output', `    ssh root@${cleanHost} -p ${activeVps.sshPort}`, 'text-cyan-300 font-mono font-bold');
+        addLine('output', `  Termux Quick Setup (if openssh not installed):`, 'text-zinc-400');
+        addLine('output', `    pkg install openssh -y && ssh root@${cleanHost} -p ${activeVps.sshPort}`, 'text-emerald-400 font-mono');
         break;
 
       case 'clear':
@@ -217,14 +268,27 @@ export const WebTerminal: React.FC = () => {
           </select>
 
           {activeVps && (
-            <button
-              onClick={copySshCommand}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-300 transition-colors"
-              title="Copy SSH Command"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-cyan-400" />}
-              <span className="font-mono text-[11px]">ssh :{activeVps.sshPort}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {onOpenSSHSession && (
+                <button
+                  onClick={onOpenSSHSession}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 hover:from-cyan-500/30 hover:to-indigo-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-semibold shadow-sm transition-all"
+                  title="Open SSH and sshx Web Session Hub"
+                >
+                  <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>SSH & sshx</span>
+                </button>
+              )}
+
+              <button
+                onClick={copySshCommand}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-300 transition-colors"
+                title="Copy SSH Command"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-cyan-400" />}
+                <span className="font-mono text-[11px]">ssh :{activeVps.sshPort}</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -308,7 +372,7 @@ export const WebTerminal: React.FC = () => {
         {/* Quick Command Toolbar */}
         <div className="px-4 py-2 bg-zinc-900/60 border-t border-zinc-800/80 flex flex-wrap items-center gap-2">
           <span className="text-[11px] text-zinc-400">Quick commands:</span>
-          {['neofetch', 'htop', 'docker ps', 'df -h', 'free -m', 'clear'].map((c) => (
+          {['sshx', 'ssh', 'neofetch', 'htop', 'docker ps', 'df -h', 'free -m', 'clear'].map((c) => (
             <button
               key={c}
               onClick={() => handleCommand(c)}

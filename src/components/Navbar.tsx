@@ -8,19 +8,23 @@ import {
   Layers,
   Cpu,
   Lock,
-  KeyRound
+  KeyRound,
+  Paintbrush
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useVPS } from '../context/VPSContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface NavbarProps {
   onOpenAuthModal: () => void;
   onOpenDeployModal: () => void;
+  onOpenThemeModal: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onOpenDeployModal }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onOpenDeployModal, onOpenThemeModal }) => {
   const { currentUser, isAdmin, logout } = useAuth();
   const { instances, userInstances } = useVPS();
+  const { theme } = useTheme();
 
   const runningCount = userInstances.filter((i) => i.status === 'RUNNING').length;
 
@@ -30,9 +34,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onOpenDeployMod
         {/* Brand */}
         <div className="flex items-center gap-3">
           <div className="relative group flex items-center justify-center">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-indigo-600 p-[1px] shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all">
-              <div className="w-full h-full bg-zinc-950 rounded-[11px] flex items-center justify-center">
-                <Server className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-indigo-600 p-[1px] shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all overflow-hidden">
+              <div className="w-full h-full bg-zinc-950 rounded-[11px] flex items-center justify-center overflow-hidden">
+                {theme.logoUrl ? (
+                  <img
+                    src={theme.logoUrl}
+                    alt="Logo"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                    onError={(e) => {
+                      // Fallback to default icon if image fails
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <Server className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                )}
               </div>
             </div>
             <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-zinc-950 animate-pulse" />
@@ -41,10 +57,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onOpenDeployMod
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold tracking-wider text-base bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
-                EVM PANEL
+                {theme.panelName || 'EVM PANEL'}
               </span>
               <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                Docker VPS
+                {theme.badgeText || 'Docker VPS'}
               </span>
             </div>
             <p className="text-[11px] text-zinc-400 flex items-center gap-1.5">
@@ -71,8 +87,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onOpenDeployMod
           </div>
         </div>
 
-        {/* Right Section: Role Badge & User Profile & Sign Out */}
-        <div className="flex items-center gap-3">
+        {/* Right Section: Theme Customizer, Role Badge, Profile & Sign Out */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Custom Theme / Wallpaper Button */}
+          <button
+            onClick={onOpenThemeModal}
+            title="Customize Background, Logo & Branding"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-300 hover:text-cyan-400 transition-all font-medium"
+          >
+            <Paintbrush className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Appearance</span>
+          </button>
+
           {/* Role Status Tag */}
           <div
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border shadow-sm transition-all ${

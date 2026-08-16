@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, UserCheck, Lock, Mail, User, AlertCircle, ArrowRight, CheckCircle2, Server, KeyRound, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface AuthModalProps {
   isOpen?: boolean;
@@ -14,6 +15,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   isFullScreen = false
 }) => {
   const { login, register } = useAuth();
+  const { theme } = useTheme();
   const [mode, setMode] = useState<'login' | 'register'>('login');
 
   // Form states
@@ -79,22 +81,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       {/* Header */}
       <div className="p-7 pb-4 flex flex-col items-center text-center">
         <div className="relative mb-3">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 p-[1px] shadow-xl shadow-cyan-500/20">
-            <div className="w-full h-full bg-zinc-950 rounded-[15px] flex items-center justify-center">
-              <Server className="w-7 h-7 text-cyan-400" />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 p-[1px] shadow-xl shadow-cyan-500/20 overflow-hidden">
+            <div className="w-full h-full bg-zinc-950 rounded-[15px] flex items-center justify-center overflow-hidden">
+              {theme.logoUrl ? (
+                <img
+                  src={theme.logoUrl}
+                  alt="Logo"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+              ) : (
+                <Server className="w-7 h-7 text-cyan-400" />
+              )}
             </div>
           </div>
           <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-zinc-950 animate-pulse" />
         </div>
 
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-extrabold tracking-tight text-white">EVM PANEL</h2>
+          <h2 className="text-xl font-extrabold tracking-tight text-white">{theme.panelName || 'EVM PANEL'}</h2>
           <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            Docker VPS
+            {theme.badgeText || 'Docker VPS'}
           </span>
         </div>
         <p className="text-xs text-zinc-400 mt-1 max-w-xs">
-          High-performance containerized VPS management platform with live terminal & NAT routing
+          {theme.tagline || 'High-performance containerized VPS management platform with live terminal & NAT routing'}
         </p>
       </div>
 
@@ -319,6 +332,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   if (isFullScreen) {
     return (
       <div className="min-h-screen w-full bg-zinc-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        {/* Custom Wallpaper Background */}
+        {theme.backgroundImageUrl ? (
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-all duration-700 pointer-events-none"
+            style={{
+              backgroundImage: `url(${theme.backgroundImageUrl})`,
+              opacity: (theme.backgroundOpacity ?? 25) / 100,
+              filter: `blur(${theme.backgroundBlur ?? 0}px)`,
+              transform: 'scale(1.05)',
+            }}
+          />
+        ) : null}
+
         {/* Cyber grid background background effect */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.08)_0,transparent_70%)] pointer-events-none" />
         <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />

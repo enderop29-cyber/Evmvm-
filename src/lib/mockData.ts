@@ -71,6 +71,24 @@ export const OS_TEMPLATES: Array<{
 
 export const INITIAL_NODES: HostNode[] = [
   {
+    id: 'node-local-01',
+    name: 'Local Host Node (Auto-Connected)',
+    ip: '127.0.0.1 (Localhost / Host VPS)',
+    location: 'Current Server Host ⚡',
+    status: 'ONLINE',
+    dockerVersion: 'Docker Engine v27.1.1 (unix:///var/run/docker.sock)',
+    cpuTotalCores: 16,
+    cpuUsage: 14.8,
+    ramTotalMb: 32768,
+    ramUsageMb: 7680,
+    diskTotalGb: 500,
+    diskUsageGb: 54,
+    activeContainers: 0,
+    isLocal: true,
+    isAutoConfigured: true,
+    socketPath: '/var/run/docker.sock',
+  },
+  {
     id: 'node-sgp-01',
     name: 'Node-AP-SG1 (Singapore Datacenter)',
     ip: '103.145.72.18',
@@ -84,6 +102,8 @@ export const INITIAL_NODES: HostNode[] = [
     diskTotalGb: 4000,
     diskUsageGb: 1140,
     activeContainers: 24,
+    isLocal: false,
+    isAutoConfigured: false,
   },
   {
     id: 'node-usw-02',
@@ -99,111 +119,12 @@ export const INITIAL_NODES: HostNode[] = [
     diskTotalGb: 8000,
     diskUsageGb: 3200,
     activeContainers: 48,
+    isLocal: false,
+    isAutoConfigured: false,
   }
 ];
 
-export const INITIAL_INSTANCES: VPSInstance[] = [
-  {
-    id: 'vps-admin-master-01',
-    name: 'prod-api-gateway',
-    containerId: 'dckr_8f93a11b90c1',
-    dockerImage: 'ubuntu:22.04',
-    os: 'Ubuntu 22.04 LTS',
-    status: 'RUNNING',
-    ownerId: 'user-admin-01',
-    ownerEmail: 'admin@evmpanel.io',
-    ownerRole: 'ADMIN',
-    cpuCores: 4,
-    ramMb: 8192,
-    diskGb: 80,
-    bandwidthTb: 4,
-    currentCpu: 18.5,
-    currentRamMb: 3420,
-    currentDiskGb: 22.4,
-    networkInTotalMb: 1420.5,
-    networkOutTotalMb: 3980.2,
-    ipv4: '103.145.72.18',
-    sshPort: 22001,
-    ports: [
-      {
-        id: 'port-1',
-        name: 'SSH Remote Access',
-        publicPort: 22001,
-        internalPort: 22,
-        protocol: 'TCP',
-        status: 'ACTIVE',
-        createdAt: '2026-03-01T10:00:00Z',
-      },
-      {
-        id: 'port-2',
-        name: 'Web HTTP Server',
-        publicPort: 28080,
-        internalPort: 80,
-        protocol: 'TCP',
-        status: 'ACTIVE',
-        createdAt: '2026-03-01T10:05:00Z',
-      },
-      {
-        id: 'port-3',
-        name: 'HTTPS TLS',
-        publicPort: 28443,
-        internalPort: 443,
-        protocol: 'TCP',
-        status: 'ACTIVE',
-        createdAt: '2026-03-01T10:05:00Z',
-      }
-    ],
-    uptimeSeconds: 384920,
-    createdAt: '2026-03-01T09:30:00Z',
-    nodeName: 'Node-AP-SG1 (Singapore Datacenter)'
-  },
-  {
-    id: 'vps-user-starter-02',
-    name: 'my-alpine-bot',
-    containerId: 'dckr_3a77f02e88d4',
-    dockerImage: 'alpine:3.19',
-    os: 'Alpine Linux 3.19',
-    status: 'RUNNING',
-    ownerId: 'user-normal-01',
-    ownerEmail: 'user@evmpanel.io',
-    ownerRole: 'USER',
-    cpuCores: 1,
-    ramMb: 1024,
-    diskGb: 15,
-    bandwidthTb: 1,
-    currentCpu: 4.2,
-    currentRamMb: 248,
-    currentDiskGb: 3.1,
-    networkInTotalMb: 120.4,
-    networkOutTotalMb: 85.1,
-    ipv4: '103.145.72.18',
-    sshPort: 22055,
-    ports: [
-      {
-        id: 'port-u1',
-        name: 'SSH Shell',
-        publicPort: 22055,
-        internalPort: 22,
-        protocol: 'TCP',
-        status: 'ACTIVE',
-        createdAt: '2026-03-05T14:10:00Z',
-      },
-      {
-        id: 'port-u2',
-        name: 'NodeJS App Port',
-        publicPort: 23000,
-        internalPort: 3000,
-        protocol: 'TCP',
-        status: 'ACTIVE',
-        createdAt: '2026-03-05T14:15:00Z',
-      }
-    ],
-    uptimeSeconds: 94820,
-    createdAt: '2026-03-05T14:00:00Z',
-    redeemedWithCode: 'EVM-STARTER-FREE',
-    nodeName: 'Node-AP-SG1 (Singapore Datacenter)'
-  }
-];
+export const INITIAL_INSTANCES: VPSInstance[] = [];
 
 export const INITIAL_REDEEM_CODES: RedeemCode[] = [
   {
@@ -216,15 +137,8 @@ export const INITIAL_REDEEM_CODES: RedeemCode[] = [
     bandwidthTb: 1,
     defaultOs: 'Alpine Linux 3.19',
     maxClaims: 50,
-    claimCount: 1,
-    claimedBy: [
-      {
-        userId: 'user-normal-01',
-        userEmail: 'user@evmpanel.io',
-        vpsId: 'vps-user-starter-02',
-        claimedAt: '2026-03-05T14:00:00Z'
-      }
-    ],
+    claimCount: 0,
+    claimedBy: [],
     expiresAt: null,
     createdAt: '2026-03-01T00:00:00Z',
     createdBy: 'admin@evmpanel.io',

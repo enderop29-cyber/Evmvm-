@@ -34,7 +34,7 @@ export const DeployVPSModal: React.FC<DeployVPSModalProps> = ({ isOpen, onClose,
   const [ramGb, setRamGb] = useState(4);
   const [diskGb, setDiskGb] = useState(40);
   const [bandwidthTb, setBandwidthTb] = useState(2);
-  const [nodeId, setNodeId] = useState(nodes[0]?.id || 'node-sgp-01');
+  const [nodeId, setNodeId] = useState(nodes[0]?.id || 'node-local-01');
   const [assignedUserId, setAssignedUserId] = useState(currentUser?.id || '');
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -151,11 +151,11 @@ export const DeployVPSModal: React.FC<DeployVPSModalProps> = ({ isOpen, onClose,
               <select
                 value={nodeId}
                 onChange={(e) => setNodeId(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white outline-none"
+                className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white outline-none font-mono"
               >
                 {nodes.map((node) => (
                   <option key={node.id} value={node.id}>
-                    {node.name}
+                    {node.isLocal ? `⚡ ${node.name} (Built-in Local Node • 0 Setup)` : node.name}
                   </option>
                 ))}
               </select>

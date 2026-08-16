@@ -16,7 +16,12 @@ import {
   Layers,
   Copy,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  Key,
+  Zap,
+  ExternalLink,
+  Radio,
+  Smartphone
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useVPS } from '../context/VPSContext';
@@ -27,20 +32,26 @@ interface VPSDetailViewProps {
   onOpenTerminal: () => void;
   onOpenNAT: () => void;
   onOpenReinstall: () => void;
+  onOpenSSHSession: () => void;
 }
 
 export const VPSDetailView: React.FC<VPSDetailViewProps> = ({
   onOpenTerminal,
   onOpenNAT,
   onOpenReinstall,
+  onOpenSSHSession,
 }) => {
   const { userInstances, selectedVps, selectedVpsId, setSelectedVpsId, startVPS, stopVPS, restartVPS, deleteVPS } = useVPS();
   const { isAdmin } = useAuth();
   const [metricHistory, setMetricHistory] = useState<MetricPoint[]>([]);
   const [copiedPort, setCopiedPort] = useState(false);
+  const [copiedTermux, setCopiedTermux] = useState(false);
+  const [copiedSshx, setCopiedSshx] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const activeVps = selectedVps || userInstances[0] || null;
+  const cleanIp = activeVps?.ipv4?.includes('127.0.0.1') ? '127.0.0.1' : (activeVps?.ipv4 || '127.0.0.1');
+  const sshxSessionUrl = activeVps ? `https://sshx.io/s#evm-${activeVps.id.slice(0, 6)}` : '';
 
   // Generate realistic metric timeline history
   useEffect(() => {
@@ -97,9 +108,15 @@ export const VPSDetailView: React.FC<VPSDetailViewProps> = ({
   }
 
   const copySsh = () => {
-    navigator.clipboard.writeText(`ssh root@${activeVps.ipv4} -p ${activeVps.sshPort}`);
+    navigator.clipboard.writeText(`ssh root@${cleanIp} -p ${activeVps.sshPort}`);
     setCopiedPort(true);
     setTimeout(() => setCopiedPort(false), 2000);
+  };
+
+  const copyTermux = () => {
+    navigator.clipboard.writeText(`ssh root@${cleanIp} -p ${activeVps.sshPort}`);
+    setCopiedTermux(true);
+    setTimeout(() => setCopiedTermux(false), 2000);
   };
 
   const handleDelete = async () => {
@@ -221,6 +238,14 @@ export const VPSDetailView: React.FC<VPSDetailViewProps> = ({
               <span>Start Instance</span>
             </button>
           )}
+
+          <button
+            onClick={onOpenSSHSession}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 hover:from-cyan-500/30 hover:to-indigo-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-semibold shadow-sm transition-all"
+          >
+            <Zap className="w-3.5 h-3.5 text-cyan-400" />
+            <span>SSH & SSHX Session</span>
+          </button>
 
           <button
             onClick={onOpenTerminal}
@@ -429,6 +454,124 @@ export const VPSDetailView: React.FC<VPSDetailViewProps> = ({
                 <Area type="monotone" dataKey="networkOut" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#netOutGrad)" />
               </AreaChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Remote Access & SSH / SSHX Sessions Hub */}
+      <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+              <Zap className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                Direct SSH, Termux & sshx Access
+              </h3>
+              <p className="text-[11px] text-zinc-400">
+                Copy direct terminal strings for Android Termux, Linux/CMD OpenSSH, or open browser sshx session
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={onOpenSSHSession}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md shadow-cyan-600/20 transition-all self-start sm:self-auto"
+          >
+            <span>All Connect Codes</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Termux Direct Command Box */}
+          <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/30 space-y-2.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-semibold text-emerald-300 flex items-center gap-1.5">
+                <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                Termux (Phone) SSH
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">
+                1-Click Paste
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg font-mono text-emerald-300 text-xs truncate">
+                ssh root@{cleanIp} -p {activeVps.sshPort}
+              </div>
+              <button
+                onClick={copyTermux}
+                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold text-xs transition-colors flex items-center gap-1 shrink-0"
+              >
+                {copiedTermux ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedTermux ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* SSH Direct Command Box */}
+          <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-semibold text-zinc-300 flex items-center gap-1.5">
+                <Terminal className="w-3.5 h-3.5 text-indigo-400" />
+                Windows CMD / Linux
+              </span>
+              <span className="text-zinc-400 font-mono">Port {activeVps.sshPort}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg font-mono text-cyan-300 text-xs truncate">
+                ssh root@{cleanIp} -p {activeVps.sshPort}
+              </div>
+              <button
+                onClick={copySsh}
+                className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg font-semibold text-xs transition-colors flex items-center gap-1 shrink-0"
+              >
+                {copiedPort ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedPort ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* SSHX Instant Web Session Box */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-950/30 to-indigo-950/30 border border-cyan-500/20 space-y-2.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-semibold text-white flex items-center gap-1.5">
+                <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                sshx Browser Web
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">
+                Live Tab
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg font-mono text-cyan-300 text-xs truncate">
+                {sshxSessionUrl}
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(sshxSessionUrl);
+                  setCopiedSshx(true);
+                  setTimeout(() => setCopiedSshx(false), 2000);
+                }}
+                className="px-2.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-semibold text-xs transition-all flex items-center gap-1 shrink-0"
+              >
+                {copiedSshx ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedSshx ? 'Copied' : 'Link'}</span>
+              </button>
+              <a
+                href={sshxSessionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg transition-colors"
+                title="Open sshx Session in New Tab"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
           </div>
         </div>
       </div>

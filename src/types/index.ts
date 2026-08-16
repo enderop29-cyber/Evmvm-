@@ -111,4 +111,7 @@ export interface HostNode {
   diskTotalGb: number;
   diskUsageGb: number;
   activeContainers: number;
+  isLocal?: boolean;
+  isAutoConfigured?: boolean;
+  socketPath?: string;
 }

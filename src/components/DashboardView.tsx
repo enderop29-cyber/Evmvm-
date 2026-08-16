@@ -16,7 +16,10 @@ import {
   Shield,
   Lock,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Zap,
+  Radio,
+  Key
 } from 'lucide-react';
 import { useVPS } from '../context/VPSContext';
 import { useAuth } from '../context/AuthContext';
@@ -26,12 +29,14 @@ interface DashboardViewProps {
   setActiveTab: (tab: TabType) => void;
   onOpenDeployModal: () => void;
   onOpenAuthModal: () => void;
+  onOpenSSHSession?: (vpsId?: string) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   setActiveTab,
   onOpenDeployModal,
   onOpenAuthModal,
+  onOpenSSHSession,
 }) => {
   const { userInstances, selectedVpsId, setSelectedVpsId, startVPS, stopVPS, restartVPS, redeemCodes } = useVPS();
   const { currentUser, isAdmin } = useAuth();
@@ -334,6 +339,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             title="Start VPS"
                           >
                             <Play className="w-3.5 h-3.5 fill-emerald-400" />
+                          </button>
+                        )}
+
+                        {onOpenSSHSession && (
+                          <button
+                            onClick={() => {
+                              setSelectedVpsId(vps.id);
+                              onOpenSSHSession(vps.id);
+                            }}
+                            className="p-2 text-zinc-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition-colors"
+                            title="SSH & sshx Web Session"
+                          >
+                            <Zap className="w-3.5 h-3.5 text-cyan-400" />
                           </button>
                         )}
 
