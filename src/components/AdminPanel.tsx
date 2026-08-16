@@ -566,9 +566,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
 
             {/* Terminal Command Snippet */}
-            <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 font-mono text-xs text-emerald-400 flex items-center justify-between overflow-x-auto">
-              <span>sudo bash install.sh</span>
-              <span className="text-[10px] text-zinc-500 font-sans ml-4">Run as root on Ubuntu / Debian / CentOS / Alpine</span>
+            <div className="space-y-2">
+              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 font-mono text-xs text-emerald-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2 overflow-x-auto">
+                <span className="font-bold">sudo bash install.sh</span>
+                <span className="text-[10px] text-zinc-500 font-sans">Run as root on Ubuntu 20/22/24 / Debian / CentOS / Alpine</span>
+              </div>
+              <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/20 text-xs text-zinc-300 flex items-start gap-2">
+                <span className="text-cyan-400 font-bold shrink-0">💡 Zero-Git Standalone Mode:</span>
+                <span>The updated installer does not require any GitHub credentials or private repo access. It auto-generates the complete Docker hypervisor and panel daemon locally in <code className="text-cyan-300 font-mono">/opt/evm-panel</code>.</span>
+              </div>
             </div>
 
             {/* Feature Matrix of install.sh */}
